@@ -37,12 +37,36 @@ public class DLSS : GameModule
         return result;
     }
     
+    public void LoadFSRLibs(BuildOptions options)
+    {
+        string path = Path.Combine(FolderPath, "../ThirdParty/FSR2/");
+
+        options.PrivateIncludePaths.Add(Path.Combine(path, "include"));
+
+        if (options.Configuration == TargetConfiguration.Debug)
+            options.LinkEnv.InputFiles.Add(Path.Combine(path, "libs/ffx_fsr2_api_x64d.lib"));
+        else
+            options.LinkEnv.InputFiles.Add(Path.Combine(path, "libs/ffx_fsr2_api_x64.lib"));
+
+        switch (options.Platform.Target)
+        {
+            case TargetPlatform.Windows:
+                if (options.Configuration == TargetConfiguration.Debug)
+                    options.LinkEnv.InputFiles.Add(Path.Combine(path, "libs/ffx_fsr2_api_dx12_x64d.lib"));
+                else
+                    options.LinkEnv.InputFiles.Add(Path.Combine(path, "libs/ffx_fsr2_api_dx12_x64.lib"));
+                break;
+        }
+    }
+
     /// <inheritdoc />
     public override void Setup(BuildOptions options)
     {
         base.Setup(options);
 
         BuildNativeCode = true;
+
+        LoadFSRLibs(options);
 
         // Link against DLSS library
         options.PrivateIncludePaths.Add(Path.Combine(FolderPath, "../ThirdParty/DLSS/include"));
